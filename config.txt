@@ -1,0 +1,2 @@
+ps:bash
+port:8003
