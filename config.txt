@@ -1,2 +1,3 @@
 ps:bash
-port:8003
+port:8002
+pidfile:server.pid

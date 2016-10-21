@@ -10,15 +10,11 @@ import psutil
 import socket
 import daemon
 
-__VERSION__ = "0.1"
+__VERSION__ = "0.2"
 
 ## StatusChecker
 #
-# Input file format:
-# command:arg
-#
-# ps    string to search for existence of in ps table
-# port  See if port is open/bound
+# see README.md
 #
 class StatusChecker:
 
@@ -94,6 +90,16 @@ class StatusChecker:
                 if not status:
                     serverIssues.append( 'port: port is not bound \'' + str(check[1]) + '\'' )
 
+            # pidfile
+            elif str(check[0]) == 'pidfile':
+                status = None
+                try:
+                    status = self._checkPidFile(check[1])
+                    if not status:
+                        serverIssues.append( 'pidfile: pidfile \'' + str(check[1]) + '\' pid not found' )
+                except Exception as e:
+                    serverIssues.append( 'pidfile: \'' + str(check[1]) + '\': \'' + str(e) + '\'' )
+
             # error
             else:
                 serverIssues.append( 'Unknown command: ' + check[0] + ':' + check[1] )
@@ -136,11 +142,29 @@ class StatusChecker:
         # Not found
         return False
 
+    ## _checkPidfile
+    #
+    # @param[in] string Filename
+    # @return boolean   PID file is valid/running
+    def _checkPidFile(self,fileName):
+        if fileName:
+            pid = ''
+            f = open(fileName, 'r')
+            for line in f:
+                pid = int(line)
+
+            process = psutil.Process(pid)
+            if process and process.status():
+                return True
+
+        # Nope
+        return False
+
 # Executive
 def application(environ, start_response):
 
     # Create our StatusChecker
-    sc = StatusChecker('foo.txt')
+    sc = StatusChecker('/etc/canaryserver.cfg')
 
     # Check server health
     serverStatus = {}
