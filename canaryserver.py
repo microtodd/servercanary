@@ -9,8 +9,10 @@ from cgi import parse_qs, escape
 import psutil
 import socket
 import daemon
+import datetime
+import sys
 
-__VERSION__ = "0.2"
+__VERSION__ = "0.3"
 
 ## StatusChecker
 #
@@ -164,15 +166,23 @@ class StatusChecker:
 def application(environ, start_response):
 
     # Create our StatusChecker
-    sc = StatusChecker('/etc/canaryserver.cfg')
+    sc = StatusChecker(ConfFile)
+
+    # Get datetime
+    dt = datetime.datetime.now()
+    now = str(dt) + " TZ:" + str(dt.tzname())
 
     # Check server health
     serverStatus = {}
+
     try:
         serverStatus = sc.checkServerHealth()
     except Exception as e:
         serverStatus['status'] = 'error'
         serverStatus['issues'] = ['Couldn\'t check server health: ' + str(e)]
+
+    # Set datetime
+    serverStatus['datetime'] = now
     response_body = str(serverStatus)
 
     # Check status
@@ -186,9 +196,20 @@ def application(environ, start_response):
     start_response(status, response_headers)
     return [response_body]
 
-# "main"
+## "main"
+#
+
+# Check for command line args
+PidFile = '/tmp/canaryserver.pid'
+ConfFile = '/etc/canaryserver.cfg'
+i = 0
+for arg in sys.argv:
+    if str(arg) == '-f':
+        ConfFile = sys.argv[i+1]
+    i += 1
+
 # Run as a daemon....detach and write out the pid file
-daemon.daemonize('/tmp/canaryserver.pid')
+daemon.daemonize(PidFile)
 httpd = make_server('localhost', 8002, application)
 httpd.serve_forever()
 

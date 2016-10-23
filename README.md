@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.2
+Version 0.3
 
 Listen on a port and give simple server health check messages.
 
@@ -17,7 +17,7 @@ Particularly useful for AWS ELB health checkers.
 
 Run from commandline as a daemon
 
-Expects a config file.
+Expects a config file in /etc/canaryserver.cfg.  Another file can be specified with -f commandline option
 
 # Config file
 
@@ -40,5 +40,6 @@ Commands:
     'issues': [
         "port: port is not bound '8003'",
         "ps: could not find process 'postgres'"
-    ]
+    ],
+    'datetime': 'date time TZ:timezone'
 }
