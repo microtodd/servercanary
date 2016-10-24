@@ -10,8 +10,14 @@ Particularly useful for AWS ELB health checkers.
 
 # Install
 
+- yum -y install python-devel
 - pip install psutil
 - pip install daemon
+- cp ~/servercanary /etc/init.d/
+- chmod u+x,g+x /etc/init.d/servercanary
+- semanage port -a -t http_port_t -p tcp 8002
+- chkconfig --add servercanary
+- service servercanary start
 
 # Usage
 
