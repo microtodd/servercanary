@@ -12,7 +12,7 @@ import daemon
 import datetime
 import sys
 
-__VERSION__ = "0.3"
+__VERSION__ = "0.4"
 
 ## StatusChecker
 #
@@ -202,14 +202,19 @@ def application(environ, start_response):
 # Check for command line args
 PidFile = '/tmp/canaryserver.pid'
 ConfFile = '/etc/canaryserver.cfg'
+ListenPort = 8002
 i = 0
 for arg in sys.argv:
     if str(arg) == '-f':
         ConfFile = sys.argv[i+1]
+    if str(arg) == '-p':
+        PidFile = sys.argv[i+1]
+    if str(arg) == '-l':
+        ListenPort = sys.argv[i+1]
     i += 1
 
 # Run as a daemon....detach and write out the pid file
 daemon.daemonize(PidFile)
-httpd = make_server('localhost', 8002, application)
+httpd = make_server('localhost', int(ListenPort), application)
 httpd.serve_forever()
 

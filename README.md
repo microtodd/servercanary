@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.3
+Version 0.4
 
 Listen on a port and give simple server health check messages.
 
@@ -18,6 +18,10 @@ Particularly useful for AWS ELB health checkers.
 Run from commandline as a daemon
 
 Expects a config file in /etc/canaryserver.cfg.  Another file can be specified with -f commandline option
+
+Listens on port 8002.  Another port can be specified with -l commandline options
+
+PID file is put at /tmp/canaryserver.pid.  Another file can be specified with -p commandline option
 
 # Config file
 
