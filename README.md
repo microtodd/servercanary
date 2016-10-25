@@ -23,23 +23,25 @@ Particularly useful for AWS ELB health checkers.
 
 Run from commandline as a daemon
 
-Expects a config file in /etc/canaryserver.cfg.  Another file can be specified with -f commandline option
+Expects a config file in /etc/canaryserver.cfg.  Another file can be specified with -f commandline option.
 
-Listens on port 8002.  Another port can be specified with -l commandline options
+Listens on port 8002.  Another port can be specified in the conf file.
 
-PID file is put at /tmp/canaryserver.pid.  Another file can be specified with -p commandline option
+PID file is put at /tmp/canaryserver.pid.  Another file can be specified in the conf file.
 
 # Config file
 
 Format:
 
- [main]
- ListenPort: 8005 (default is 8002)
- ListenHost: 0.0.0.0 (or maybe localhost) (default is localhost)
- PidFile:    /path/to/file.pid (default is /tmp/canaryserver.pid)
+```
+[main]
+ListenPort: 8005 (default is 8002)
+ListenHost: 0.0.0.0 (or maybe localhost) (default is localhost)
+PidFile:    /path/to/file.pid (default is /tmp/canaryserver.pid)
 
- [healthchecks]
- command:arg,arg,arg
+[healthchecks]
+command:arg,arg,arg
+```
 
 Commands:
 
