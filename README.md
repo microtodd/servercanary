@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.4
+Version 0.5
 
 Listen on a port and give simple server health check messages.
 
@@ -33,7 +33,13 @@ PID file is put at /tmp/canaryserver.pid.  Another file can be specified with -p
 
 Format:
 
-    command:arg
+ [main]
+ ListenPort: 8005 (default is 8002)
+ ListenHost: 0.0.0.0 (or maybe localhost) (default is localhost)
+ PidFile:    /path/to/file.pid (default is /tmp/canaryserver.pid)
+
+ [healthchecks]
+ command:arg,arg,arg
 
 Commands:
 

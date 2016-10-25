@@ -1,18 +1,21 @@
 #
 # StatusCanary.py
 #
+# @auathor T.S. Davenport (todd.davenport@yahoo.com)
+#
 # TODO:
 # -Add SNS notify
 #
 from wsgiref.simple_server import make_server
 from cgi import parse_qs, escape
+import ConfigParser
 import psutil
 import socket
 import daemon
 import datetime
 import sys
 
-__VERSION__ = "0.4"
+__VERSION__ = "0.5"
 
 ## StatusChecker
 #
@@ -39,10 +42,18 @@ class StatusChecker:
 
             # If input file could not be opened, track this as an internal error
             try:
-                f = open(inputFile, 'r')
-                for line in f:
-                    command,arg = str(line).split(':')
-                    self._checksToRun.append( [command,arg.rstrip('\n')] )
+                myConfParser = ConfigParser.ConfigParser()
+                myConfParser.read(inputFile)
+
+                # Read the items out of the conf file
+                for item in myConfParser.items('healthchecks'):
+                    command = item[0]
+                    arg = item[1]
+
+                    # Check and see if item is a list
+                    for subarg in str(arg).split(','):
+                        self._checksToRun.append( [command,subarg] )
+
             except Exception as e:
                 self._errorState = True
                 self._lastError = 'Canary could not fly: ' + str(e)
@@ -203,18 +214,25 @@ def application(environ, start_response):
 PidFile = '/tmp/canaryserver.pid'
 ConfFile = '/etc/canaryserver.cfg'
 ListenPort = 8002
+ListenHost = 'localhost'
 i = 0
 for arg in sys.argv:
     if str(arg) == '-f':
         ConfFile = sys.argv[i+1]
-    if str(arg) == '-p':
-        PidFile = sys.argv[i+1]
-    if str(arg) == '-l':
-        ListenPort = sys.argv[i+1]
     i += 1
+
+# Load conf file
+MyConfParser = ConfigParser.ConfigParser()
+MyConfParser.read(ConfFile)
+if MyConfParser.has_option('main','PidFile'):
+    PidFile = str(MyConfParser.get('main','PidFile'))
+if MyConfParser.has_option('main','ListenPort'):
+    ListenPort = str(MyConfParser.get('main','ListenPort'))
+if MyConfParser.has_option('main','ListenHost'):
+    ListenHost = str(MyConfParser.get('main','ListenHost'))
 
 # Run as a daemon....detach and write out the pid file
 daemon.daemonize(PidFile)
-httpd = make_server('localhost', int(ListenPort), application)
+httpd = make_server(ListenHost, int(ListenPort), application)
 httpd.serve_forever()
 

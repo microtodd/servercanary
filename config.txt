@@ -1,3 +1,9 @@
-ps:bash
-port:8002
+[main]
+ListenPort:     8005
+ListenHost:     0.0.0.0
+PidFile:        /tmp/canaryserver.pid
+
+[healthchecks]
+ps:     bash,httpd
+port:   8005,8009
 pidfile:/tmp/canaryserver.pid
