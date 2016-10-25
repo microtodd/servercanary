@@ -53,6 +53,7 @@ Commands:
 
 # Output
 
+```
 {
     'status': 'error|ok',
     'issues': [
@@ -61,3 +62,5 @@ Commands:
     ],
     'datetime': 'date time TZ:timezone'
 }
+```
+
