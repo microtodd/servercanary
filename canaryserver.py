@@ -14,6 +14,7 @@ import socket
 import daemon
 import datetime
 import sys
+from netifaces import interfaces, ifaddresses, AF_INET
 
 __VERSION__ = "0.5"
 
@@ -73,6 +74,13 @@ class StatusChecker:
     #   status:     'ok|error',
     #   issues:     [ list of error messages ]
     # }
+    def ip4_addresses(self):
+        ip_list = []
+        for interface in interfaces():
+            for link in ifaddresses(interface)[AF_INET]:
+                ip_list.append(link['addr'])
+        return ip_list
+
     def checkServerHealth(self):
 
         # Check for internal errors
@@ -146,11 +154,13 @@ class StatusChecker:
     # @return boolean   Is it bound
     def _checkPort(self,port):
         if port:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = s.connect_ex(('127.0.0.1', int(port)))
-            if result == 0:
-                s.close()
-                return True
+            addr = []
+            for addr in self.ip4_addresses():
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                result = s.connect_ex((str(addr), int(port)))
+                if result == 0:
+                    s.close()
+                    return True
 
         # Not found
         return False
