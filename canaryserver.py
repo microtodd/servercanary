@@ -1,5 +1,6 @@
+#!/usr/bin/python
 #
-# StatusCanary.py
+# servercanary.py
 #
 # @auathor T.S. Davenport (todd.davenport@yahoo.com)
 #
