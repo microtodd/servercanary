@@ -11,8 +11,7 @@ Particularly useful for AWS ELB health checkers.
 # Install
 
 - yum -y install python-devel
-- pip install psutil
-- pip install daemon
+- pip install psutil daemon netifaces slackclient
 - cp ~/servercanary /etc/init.d/
 - chmod u+x,g+x /etc/init.d/servercanary
 - semanage port -a -t http_port_t -p tcp 8002
@@ -41,6 +40,10 @@ PidFile:    /path/to/file.pid (default is /tmp/canaryserver.pid)
 
 [healthchecks]
 command:arg,arg,arg
+
+[slack]
+SlackToken: <token>
+SlackChannel: Channel Name (exclude the #)
 ```
 
 Commands:
