@@ -26,12 +26,13 @@ NAME="root"
 OWNER="root"
 DESC="python canaryserver.py"
 DAEMON="python canaryserver.py"
+DIR="/root/servercanary/"
 PIDFILE="/tmp/canaryserver.pid"
 LOCKFILE="/var/lock/canaryserver.lock"
 
 DAEMON_OPTS=""
 
-cd ~
+cd $DIR
 
 start() {
     if [ ! -f $PIDFILE ]; then
