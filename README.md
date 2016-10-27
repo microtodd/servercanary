@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.5
+Version 0.6
 
 Listen on a port and give simple server health check messages.
 
@@ -37,6 +37,8 @@ Format:
 ListenPort: 8005 (default is 8002)
 ListenHost: 0.0.0.0 (or maybe localhost) (default is localhost)
 PidFile:    /path/to/file.pid (default is /tmp/canaryserver.pid)
+SlackChannel: nameOfChannel
+SlackToken: token
 
 [healthchecks]
 command:arg,arg,arg

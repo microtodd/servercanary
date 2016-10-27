@@ -3,9 +3,8 @@
 # servercanary.py
 #
 # @auathor T.S. Davenport (todd.davenport@yahoo.com)
+# @author Ferritt1975 (https://github.com/Ferritt1975)
 #
-# TODO:
-# -Add SNS notify
 #
 from wsgiref.simple_server import make_server
 from cgi import parse_qs, escape
@@ -18,7 +17,7 @@ import sys
 from netifaces import interfaces, ifaddresses, AF_INET
 from slackclient import SlackClient
 
-__VERSION__ = "0.5"
+__VERSION__ = "0.6"
 
 ## StatusChecker
 #
@@ -76,13 +75,6 @@ class StatusChecker:
     #   status:     'ok|error',
     #   issues:     [ list of error messages ]
     # }
-    def ip4_addresses(self):
-        ip_list = []
-        for interface in interfaces():
-            for link in ifaddresses(interface)[AF_INET]:
-                ip_list.append(link['addr'])
-        return ip_list
-
     def checkServerHealth(self):
 
         # Check for internal errors
@@ -156,8 +148,7 @@ class StatusChecker:
     # @return boolean   Is it bound
     def _checkPort(self,port):
         if port:
-            addr = []
-            for addr in self.ip4_addresses():
+            for addr in self._ip4_addresses():
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 result = s.connect_ex((str(addr), int(port)))
                 if result == 0:
@@ -166,6 +157,19 @@ class StatusChecker:
 
         # Not found
         return False
+
+    ## _ip4_addresses
+    #
+    # @return list of interfaces on this host
+    def _ip4_addresses(self):
+        ip_list = []
+        for interface in interfaces():
+            ifaddrs = ifaddresses(interface)
+            if AF_INET in ifaddrs:
+                for link in ifaddrs[AF_INET]:
+                    ip_list.append(link['addr'])
+        return ip_list
+
 
     ## _checkPidfile
     #
