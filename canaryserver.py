@@ -16,6 +16,7 @@ import daemon
 import datetime
 import sys
 from netifaces import interfaces, ifaddresses, AF_INET
+from slackclient import SlackClient
 
 __VERSION__ = "0.5"
 
@@ -211,6 +212,13 @@ def application(environ, start_response):
     status = '200 OK'
     if str(serverStatus['status']) != 'ok':
         status = '500 Internal Server Error'
+        MyConfParser = ConfigParser.ConfigParser()
+        MyConfParser.read(ConfFile)
+        if MyConfParser.has_option('slack','SlackToken') and  MyConfParser.has_option('slack', 'SlackChannel'):
+            SlackToken = str(MyConfParser.get('slack', 'SlackToken'))
+            SlackChannel = '#'+str(MyConfParser.get('slack', 'SlackChannel'))
+            sc = SlackClient(SlackToken)
+            print sc.api_call("chat.postMessage", channel=str(SlackChannel), text="Oh Noes!  Something bad happened! Commensing self-desctruct sequence in 5...4...3...", username='canary', icon_emoji=':hatched_chick:')
 
     # Respond
     response_headers = [('Content-Type', 'text/plain'),
