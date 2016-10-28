@@ -2,8 +2,11 @@
 ListenPort:     8005
 ListenHost:     localhost
 PidFile:        /tmp/canaryserver.pid
+ShowTime:       yes
+ShowUptime:     yes
+GracePeriod:    300
 
 [healthchecks]
 ps:     bash
 port:   8005
-pidfile:/tmp/canaryserver.pid
+pidfile:/tmp/canaryserver.pid,/tmp/canaryserver1.pid
