@@ -279,6 +279,10 @@ if MyConfParser.has_option('main','ShowUptime'):
     ShowUptime = str(MyConfParser.get('main','ShowUptime'))
 if MyConfParser.has_option('main','GracePeriod'):
     GracePeriod = str(MyConfParser.get('main','GracePeriod'))
+if MyConfParser.has_option('slack','SlackToken'):
+    SlackToken = str(MyConfParser.get('slack','SlackToken'))
+if MyConfParser.has_option('slack','SlackChannel'):
+    SlackChannel = str(MyConfParser.get('main','SlackChannel'))
 
 # Run as a daemon....detach and write out the pid file
 daemon.daemonize(PidFile)

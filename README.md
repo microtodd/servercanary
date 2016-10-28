@@ -69,7 +69,9 @@ Commands:
         "port: port is not bound '8003'",
         "ps: could not find process 'postgres'"
     ],
-    'datetime': 'date time TZ:timezone'
+    'datetime': 'date time TZ:timezone',
+    'uptime': 'x days hh:mm:ss',
+    'inGracePeriod': 'true'
 }
 ```
 
