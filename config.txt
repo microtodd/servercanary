@@ -5,6 +5,7 @@ PidFile:        /tmp/canaryserver.pid
 ShowTime:       yes
 ShowUptime:     yes
 GracePeriod:    300
+AlertWindow:    300
 
 [healthchecks]
 ps:     bash

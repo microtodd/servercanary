@@ -18,7 +18,7 @@ from uptime import uptime
 from netifaces import interfaces, ifaddresses, AF_INET
 from slackclient import SlackClient
 
-__VERSION__ = "0.6"
+__VERSION__ = "0.7"
 
 ## StatusChecker
 #
@@ -26,47 +26,41 @@ __VERSION__ = "0.6"
 #
 class StatusChecker:
 
-    # List of tests to run
-    _checksToRun = []
-    _errorState = False
-    _lastError = ''
 
+    # Class variables
+    checksToRun = []
+    errorState = False
+    lastError = ''
+    pidFile = '/tmp/canaryserver.pid'
+    confFile = '/etc/canaryserver.cfg'
+    listenPort = 8002
+    listenHost = 'localhost'
+    showTime = False
+    showUptime = False
+    gracePeriod = 0
+    slackToken = None
+    slackChannel = None
+    alertWindow = 0
+    lastErrorFound = 0
+    
     ## constructor
     #
-    def __init__(self, inputFile=None):
+    def __init__(self):
+        pass
 
-        # Init
-        self._checksToRun = []
-        self._errorState = False
-        self._lastError = ''
-        
-        # List of tests for this server
-        if inputFile:
-
-            # If input file could not be opened, track this as an internal error
-            try:
-                myConfParser = ConfigParser.ConfigParser()
-                myConfParser.read(inputFile)
-
-                # Read the items out of the conf file
-                for item in myConfParser.items('healthchecks'):
-                    command = item[0]
-                    arg = item[1]
-
-                    # Check and see if item is a list
-                    for subarg in str(arg).split(','):
-                        self._checksToRun.append( [command,subarg] )
-
-            except Exception as e:
-                self._errorState = True
-                self._lastError = 'Canary could not fly: ' + str(e)
-
-    ## TODO notify
+    # Public methods
+    
+    ## notify
     #
-    # Send an SNS message about something
+    # Send a message about something
     #
     def notify(self):
-        pass
+
+        # Check for Slack
+        if self.slackToken and self.slackChannel:
+            sc = SlackClient(self.slackToken)
+            print sc.api_call("chat.postMessage", channel='#' + str(self.slackChannel), username='canary', icon_emoji=':hatched_chick:',
+                text="Oh Noes! Something bad happened! Commencing self-desctruct sequence in 5...4...3...")
 
     ## main call
     #
@@ -78,10 +72,10 @@ class StatusChecker:
     def checkServerHealth(self):
 
         # Check for internal errors
-        if self._errorState:
+        if self.errorState:
             returnStatus = {}
             returnStatus['status'] = 'error'
-            returnStatus['issues'] = [self._lastError]
+            returnStatus['issues'] = [self.lastError]
             return returnStatus
 
         # List of issues
@@ -91,7 +85,7 @@ class StatusChecker:
         serverOverallStatus = 'ok'
 
         # Do stuff
-        for check in self._checksToRun:
+        for check in self.checksToRun:
 
             # ps
             if str(check[0]) == 'ps':
@@ -125,9 +119,87 @@ class StatusChecker:
         returnStatus = {}
         returnStatus['status'] = serverOverallStatus
         returnStatus['issues'] = serverIssues
-        return returnStatus
 
-    ## _checkPS
+        # Put time in return if it was asked for
+        if str(self.showTime) == 'yes':
+            dt = datetime.datetime.now()
+            now = str(dt) + " TZ:" + str(dt.tzname())
+            returnStatus['datetime'] = now
+
+        # Get uptime.  Put in return if asked for
+        systemUptime = uptime()
+        if str(self.showUptime) == 'yes':
+            returnStatus['uptime'] = str(datetime.timedelta(seconds=systemUptime))
+
+        # Set the status based upon error status
+        status = '200 OK'
+        if serverOverallStatus != 'ok':
+            status = '500 Internal Server Error'
+
+            # See if we are in a "grace period"
+            # If we are, always return 200
+            if int(self.gracePeriod) > 0 and systemUptime <= float(self.gracePeriod):
+                status = '200 OK'
+                returnStatus['inGracePeriod'] = 'true'
+
+            # otherwise, see if we are in error window to send out notify
+            elif (systemUptime - self.lastErrorFound) > float(self.alertWindow):
+
+                # The time since we last reported an error is more than our alert window,
+                # so  send out a notify
+                self.lastErrorFound = systemUptime
+                self.notify()
+
+        return status,returnStatus
+    
+    ## configure
+    #
+    def configure(self, inputFile):
+        myConfParser = ConfigParser.ConfigParser()
+
+        try:
+            myConfParser.read(inputFile)
+
+            # Read the healthcheck items out of the conf file
+            for item in myConfParser.items('healthchecks'):
+                command = item[0]
+                arg = item[1]
+
+                # Check and see if item is a list
+                for subarg in str(arg).split(','):
+                    self.checksToRun.append( [command,subarg] )
+
+            # Read the main items out of the conf file
+            for item in myConfParser.items('main'):
+                command = item[0]
+                arg = item[1]
+
+                if str(command) == 'pidfile':
+                    self.pidFile = str(arg)
+                elif str(command) == 'listenport':
+                    self.listenPort = str(arg)
+                elif str(command) == 'listenhost':
+                    self.listenHost = str(arg)
+                elif str(command) == 'showtime':
+                    self.showTime = str(arg)
+                elif str(command) == 'showuptime':
+                    self.showUptime = str(arg)
+                elif str(command) == 'graceperiod':
+                    self.gracePeriod = str(arg)
+                elif str(command) == 'alertwindow':
+                    self.alertWindow = str(arg)
+                elif str(command) == 'slacktoken':
+                    self.slackToken = str(arg)
+                elif str(command) == 'slackchannel':
+                    self.slackChannel = str(arg)
+
+        except Exception as e:
+            self.errorState = True
+            self.lastError = 'Canary could not fly (loading conf file ' + str(inputFile) + ': ' + str(e)
+
+    ## Private methods
+
+    ## checkPS
     #
     # @param[in] string PID to check for
     # @return boolean   Is it running
@@ -142,7 +214,7 @@ class StatusChecker:
         # Process not found
         return False
 
-    ## _checkPort
+    ## checkPort
     #
     # @param[in] int    portnum to check
     # @return boolean   Is it bound
@@ -158,7 +230,7 @@ class StatusChecker:
         # Not found
         return False
 
-    ## _ip4_addresses
+    ## ip4_addresses
     #
     # @return list of interfaces on this host
     def _ip4_addresses(self):
@@ -171,7 +243,7 @@ class StatusChecker:
         return ip_list
 
 
-    ## _checkPidfile
+    ## checkPidfile
     #
     # @param[in] string Filename
     # @return boolean,pid   PID file is valid/running and the pid itself
@@ -192,51 +264,18 @@ class StatusChecker:
 # Executive
 def application(environ, start_response):
 
-    # Create our StatusChecker
-    sc = StatusChecker(ConfFile)
-
     # Check server health
     serverStatus = {}
-
-    # Get current datetime
-    dt = datetime.datetime.now()
+    status = None
 
     # Make the server status check call
     # Wrap in try/catch
     try:
-        serverStatus = sc.checkServerHealth()
+        status,serverStatus = SC.checkServerHealth()
     except Exception as e:
         serverStatus['status'] = 'error'
         serverStatus['issues'] = ['Couldn\'t check server health: ' + str(e)]
-
-    # Put time in return if it was asked for
-    if str(ShowTime) == 'yes':
-        now = str(dt) + " TZ:" + str(dt.tzname())
-        serverStatus['datetime'] = now
-
-    # Get uptime.  Put in return if asked for
-    systemUptime = uptime()
-    if str(ShowUptime) == 'yes':
-        serverStatus['uptime'] = str(datetime.timedelta(seconds=systemUptime))
-
-    # Check status
-    status = '200 OK'
-    if str(serverStatus['status']) != 'ok':
         status = '500 Internal Server Error'
-
-        # Check if we should notify
-        if SlackToken is not None and SlackChannel is not None:
-            SlackChannel = '#' + SlackChannel
-            sc = SlackClient(SlackToken)
-            print sc.api_call("chat.postMessage", channel=str(SlackChannel), username='canary', icon_emoji=':hatched_chick:',
-                text="Oh Noes!  Something bad happened! Commensing self-desctruct sequence in 5...4...3...")
-
-    # See if we are in a "grace period"
-    # If we are, always return 200
-    if int(GracePeriod) > 0:
-        if systemUptime <= float(GracePeriod):
-            status = '200 OK'
-            serverStatus['inGracePeriod'] = 'true'
 
     # Respond
     response_body = str(serverStatus)
@@ -246,46 +285,23 @@ def application(environ, start_response):
     return [response_body]
 
 ## "main"
-#
 
-# Check for command line args
-PidFile = '/tmp/canaryserver.pid'
+# Create our StatusChecker
+SC = StatusChecker()
+
+# Check command line args
 ConfFile = '/etc/canaryserver.cfg'
-ListenPort = 8002
-ListenHost = 'localhost'
-ShowTime = False
-ShowUptime = False
-GracePeriod = 0
-SlackToken = None
-SlackChannel = None
 i = 0
 for arg in sys.argv:
     if str(arg) == '-f':
         ConfFile = sys.argv[i+1]
     i += 1
 
-# Load conf file
-MyConfParser = ConfigParser.ConfigParser()
-MyConfParser.read(ConfFile)
-if MyConfParser.has_option('main','PidFile'):
-    PidFile = str(MyConfParser.get('main','PidFile'))
-if MyConfParser.has_option('main','ListenPort'):
-    ListenPort = str(MyConfParser.get('main','ListenPort'))
-if MyConfParser.has_option('main','ListenHost'):
-    ListenHost = str(MyConfParser.get('main','ListenHost'))
-if MyConfParser.has_option('main','ShowTime'):
-    ShowTime = str(MyConfParser.get('main','ShowTime'))
-if MyConfParser.has_option('main','ShowUptime'):
-    ShowUptime = str(MyConfParser.get('main','ShowUptime'))
-if MyConfParser.has_option('main','GracePeriod'):
-    GracePeriod = str(MyConfParser.get('main','GracePeriod'))
-if MyConfParser.has_option('slack','SlackToken'):
-    SlackToken = str(MyConfParser.get('slack','SlackToken'))
-if MyConfParser.has_option('slack','SlackChannel'):
-    SlackChannel = str(MyConfParser.get('main','SlackChannel'))
+# Configre
+SC.configure(ConfFile)
 
 # Run as a daemon....detach and write out the pid file
-daemon.daemonize(PidFile)
-httpd = make_server(ListenHost, int(ListenPort), application)
+daemon.daemonize(SC.pidFile)
+httpd = make_server(SC.listenHost, int(SC.listenPort), application)
 httpd.serve_forever()
 
