@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.7
+Version 0.8
 
 Listen on a port and give simple server health check messages.
 
@@ -43,6 +43,7 @@ ShowTime:       yes|no
 ShowUptime:     yes|no
 GracePeriod:    x (in seconds) (if an error found within grace period of system boot, returns 200 anyways)
                 Can be useful for systems that take some time after boot to become ready.
+AlertWindow:    x (in seconds) (if an error found within alert window of the last error, no notify sent)
 
 [healthchecks]
 command:arg,arg,arg
