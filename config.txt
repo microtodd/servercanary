@@ -7,6 +7,10 @@ ShowUptime:     yes
 GracePeriod:    300
 AlertWindow:    300
 
+[notify]
+SlackChannel:   channelname
+SlackToken:     xxx
+
 [healthchecks]
 ps:     bash
 port:   8005

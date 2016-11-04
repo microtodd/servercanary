@@ -18,7 +18,7 @@ from uptime import uptime
 from netifaces import interfaces, ifaddresses, AF_INET
 from slackclient import SlackClient
 
-__VERSION__ = "0.7"
+__VERSION__ = "0.8"
 
 ## StatusChecker
 #
@@ -188,7 +188,12 @@ class StatusChecker:
                     self.gracePeriod = str(arg)
                 elif str(command) == 'alertwindow':
                     self.alertWindow = str(arg)
-                elif str(command) == 'slacktoken':
+
+            # Read the notify items out of the conf file
+            for item in myConfParser.items('notify'):
+                command = item[0]
+                arg = item[1]
+                if str(command) == 'slacktoken':
                     self.slackToken = str(arg)
                 elif str(command) == 'slackchannel':
                     self.slackChannel = str(arg)

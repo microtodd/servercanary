@@ -48,7 +48,7 @@ AlertWindow:    x (in seconds) (if an error found within alert window of the las
 [healthchecks]
 command:arg,arg,arg
 
-[slack]
+[notify]
 SlackToken: <token>
 SlackChannel: Channel Name (exclude the #)
 ```
