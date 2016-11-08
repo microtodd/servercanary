@@ -14,11 +14,12 @@ import socket
 import daemon
 import datetime
 import sys
+import os
 from uptime import uptime
 from netifaces import interfaces, ifaddresses, AF_INET
 from slackclient import SlackClient
 
-__VERSION__ = "0.8"
+__VERSION__ = "0.9"
 
 ## StatusChecker
 #
@@ -76,7 +77,8 @@ class StatusChecker:
             returnStatus = {}
             returnStatus['status'] = 'error'
             returnStatus['issues'] = [self.lastError]
-            return returnStatus
+            status = '500 Internal Server Error'
+            return status,returnStatus
 
         # List of issues
         serverIssues = []
@@ -108,6 +110,17 @@ class StatusChecker:
                         serverIssues.append( 'pidfile: pidfile \'' + str(check[1]) + '\' pid \'' + str(pid)+ '\' not found' )
                 except Exception as e:
                     serverIssues.append( 'pidfile: \'' + str(check[1]) + '\': \'' + str(e) + '\'' )
+
+            # service
+            elif str(check[0]) == 'service':
+                status = None
+                try:
+                    status = self._checkService(check[1])
+                    if int(status) != 0:
+                        serverIssues.append( 'service: \'' + str(check[1]) + '\' is not running (I think...)')
+
+                except Exception as e:
+                    serverIssues.append( 'service: \'' + str(check[1]) + '\': \'' + str(e) + '\'' )
 
             # error
             else:
@@ -190,13 +203,14 @@ class StatusChecker:
                     self.alertWindow = str(arg)
 
             # Read the notify items out of the conf file
-            for item in myConfParser.items('notify'):
-                command = item[0]
-                arg = item[1]
-                if str(command) == 'slacktoken':
-                    self.slackToken = str(arg)
-                elif str(command) == 'slackchannel':
-                    self.slackChannel = str(arg)
+            if myConfParser.has_section('notify'):
+                for item in myConfParser.items('notify'):
+                    command = item[0]
+                    arg = item[1]
+                    if str(command) == 'slacktoken':
+                        self.slackToken = str(arg)
+                    elif str(command) == 'slackchannel':
+                        self.slackChannel = str(arg)
 
         except Exception as e:
             self.errorState = True
@@ -265,6 +279,15 @@ class StatusChecker:
 
         # Nope
         return False, pid
+
+    ## checkService
+    #
+    # @param[in] string servicename
+    # @return int returnCode (if its 0 then service is running (maybe))
+    def _checkService(self,serviceName):
+
+        # This is hokey...
+        return os.system('service ' + str(serviceName) + ' status')
 
 # Executive
 def application(environ, start_response):

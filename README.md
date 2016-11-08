@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.8
+Version 0.9
 
 Listen on a port and give simple server health check messages.
 
@@ -60,6 +60,8 @@ Commands:
     port - See if something is listening on port <arg>
 
     pidfile - Check to see if pidfile is valid and running
+
+    service - See if service is running (only works on CentOS/RHEL)
 
 # Output
 
