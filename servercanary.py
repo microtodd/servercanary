@@ -32,8 +32,8 @@ class StatusChecker:
     checksToRun = []
     errorState = False
     lastError = ''
-    pidFile = '/tmp/canaryserver.pid'
-    confFile = '/etc/canaryserver.cfg'
+    pidFile = '/tmp/servercanary.pid'
+    confFile = '/etc/servercanary.cfg'
     listenPort = 8002
     listenHost = 'localhost'
     showTime = False
@@ -318,7 +318,7 @@ def application(environ, start_response):
 SC = StatusChecker()
 
 # Check command line args
-ConfFile = '/etc/canaryserver.cfg'
+ConfFile = '/etc/servercanary.cfg'
 i = 0
 for arg in sys.argv:
     if str(arg) == '-f':

@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# canaryserver - Daemonize the canary server
+# servercanary - Daemonize the canary server
 #
 # chkconfig: - 85 15
 # description: Daemonize the canary server
 # processname: canary
-# config: /etc/canaryserver.cfg
-# pidfile: /tmp/canaryserver.pid
+# config: /etc/servercanary
+# pidfile: /tmp/servercanary
 #
 ### BEGIN INIT INFO
-# Provides: canaryserver
+# Provides: servercanary
 # Required-Start $local_fs $remote_fs $network
 # Required-Stop $local_fs $remote_fs $network
 # Default-Start: 2 3 4 5
@@ -24,11 +24,11 @@
 
 NAME="root"
 OWNER="root"
-DESC="python canaryserver.py"
-DAEMON="python canaryserver.py"
+DESC="python servercanary"
+DAEMON="python servercanary"
 DIR="/root/servercanary/"
-PIDFILE="/tmp/canaryserver.pid"
-LOCKFILE="/var/lock/canaryserver.lock"
+PIDFILE="/tmp/servercanary.pid"
+LOCKFILE="/var/lock/servercanary.lock"
 
 DAEMON_OPTS=""
 

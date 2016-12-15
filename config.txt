@@ -1,7 +1,7 @@
 [main]
 ListenPort:     8005
 ListenHost:     localhost
-PidFile:        /tmp/canaryserver.pid
+PidFile:        /tmp/servercanary.pid
 ShowTime:       yes
 ShowUptime:     yes
 GracePeriod:    300
@@ -14,5 +14,5 @@ SlackToken:     xxx
 [healthchecks]
 ps:     bash
 port:   8005
-pidfile:/tmp/canaryserver.pid,/tmp/canaryserver1.pid
+pidfile:/tmp/servercanary.pid,/tmp/servercanary.pid
 service:sendmail

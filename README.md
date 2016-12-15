@@ -22,11 +22,11 @@ Particularly useful for AWS ELB health checkers.
 
 Run from commandline as a daemon
 
-Expects a config file in /etc/canaryserver.cfg.  Another file can be specified with -f commandline option.
+Expects a config file in /etc/servercanary.cfg.  Another file can be specified with -f commandline option.
 
 Listens on port 8002.  Another port can be specified in the conf file.
 
-PID file is put at /tmp/canaryserver.pid.  Another file can be specified in the conf file.
+PID file is put at /tmp/servercanary.pid.  Another file can be specified in the conf file.
 
 # Config file
 
@@ -36,9 +36,7 @@ Format:
 [main]
 ListenPort: 8005 (default is 8002)
 ListenHost: 0.0.0.0 (or maybe localhost) (default is localhost)
-PidFile:    /path/to/file.pid (default is /tmp/canaryserver.pid)
-SlackChannel: nameOfChannel
-SlackToken: token
+PidFile:    /path/to/file.pid (default is /tmp/servercanary.pid)
 ShowTime:       yes|no
 ShowUptime:     yes|no
 GracePeriod:    x (in seconds) (if an error found within grace period of system boot, returns 200 anyways)
