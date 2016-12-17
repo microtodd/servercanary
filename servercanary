@@ -24,8 +24,8 @@
 
 NAME="root"
 OWNER="root"
-DESC="python servercanary"
-DAEMON="python servercanary"
+DESC="python servercanary.py"
+DAEMON="python servercanary.py"
 DIR="/root/servercanary/"
 PIDFILE="/tmp/servercanary.pid"
 LOCKFILE="/var/lock/servercanary.lock"
