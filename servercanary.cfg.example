@@ -1,0 +1,20 @@
+[main]
+ListenPort:     8005
+ListenHost:     localhost
+PidFile:        /tmp/servercanary.pid
+ShowTime:       yes
+ShowUptime:     yes
+GracePeriod:    300
+AlertWindow:    300
+
+[notify]
+SlackChannel:   channelname
+SlackToken:     xxx
+SlackName:      ServerCanary
+VerboseMessage: yes
+
+[healthchecks]
+ps:     bash
+port:   8005
+pidfile:/tmp/servercanary.pid,/tmp/servercanary.pid
+service:sendmail

@@ -19,7 +19,7 @@ from uptime import uptime
 from netifaces import interfaces, ifaddresses, AF_INET
 from slackclient import SlackClient
 
-__VERSION__ = "0.9"
+__VERSION__ = "0.10"
 
 ## StatusChecker
 #
@@ -41,8 +41,10 @@ class StatusChecker:
     gracePeriod = 0
     slackToken = None
     slackChannel = None
+    slackName = None
     alertWindow = 0
     lastErrorFound = 0
+    verboseSlackMessage = False
     
     ## constructor
     #
@@ -55,13 +57,27 @@ class StatusChecker:
     #
     # Send a message about something
     #
-    def notify(self):
+    def notify(self,errors):
 
         # Check for Slack
         if self.slackToken and self.slackChannel:
             sc = SlackClient(self.slackToken)
-            print sc.api_call("chat.postMessage", channel='#' + str(self.slackChannel), username='canary', icon_emoji=':hatched_chick:',
-                text="Oh Noes! Something bad happened! Commencing self-desctruct sequence in 5...4...3...")
+
+            # Check for appname
+            slackUserName = 'serverCanary'
+            if self.slackName:
+                slackUserName = self.slackName
+            else:
+                slackUserName = str(socket.gethostname())
+
+            # Post the message
+            slackText = 'Oh Noes! Something bad happened! Commencing self-destruct sequence in 5...4...3...'
+
+            # See if we should post error messages
+            if str(self.verboseSlackMessage) == 'yes':
+                slackText = 'Found errors, returned 500: ' + str(errors)
+
+            print sc.api_call('chat.postMessage', channel='#' + str(self.slackChannel), username=slackUserName, icon_emoji=':hatched_chick:', text=slackText)
 
     ## main call
     #
@@ -159,9 +175,9 @@ class StatusChecker:
             elif (systemUptime - self.lastErrorFound) > float(self.alertWindow):
 
                 # The time since we last reported an error is more than our alert window,
-                # so  send out a notify
+                # so send out a notify
                 self.lastErrorFound = systemUptime
-                self.notify()
+                self.notify(serverIssues)
 
         return status,returnStatus
     
@@ -211,6 +227,10 @@ class StatusChecker:
                         self.slackToken = str(arg)
                     elif str(command) == 'slackchannel':
                         self.slackChannel = str(arg)
+                    elif str(command) == 'slackname':
+                        self.slackName = str(arg)
+                    elif str(command) == 'verbosemessage':
+                        self.verboseSlackMessage = str(arg)
 
         except Exception as e:
             self.errorState = True

@@ -1,6 +1,6 @@
 # servercanary
 
-Version 0.9
+Version 0.10
 
 Listen on a port and give simple server health check messages.
 
@@ -11,7 +11,7 @@ Particularly useful for AWS ELB health checkers.
 # Install
 
 - yum -y install python-devel
-- pip install psutil daemon netifaces slackclient uptime
+- pip install --upgrade psutil daemon netifaces slackclient uptime
 - cp ~/servercanary /etc/init.d/
 - chmod u+x,g+x /etc/init.d/servercanary
 - semanage port -a -t http_port_t -p tcp 8002
@@ -49,6 +49,8 @@ command:arg,arg,arg
 [notify]
 SlackToken: <token>
 SlackChannel: Channel Name (exclude the #)
+SlackName: <name> (this is the username that it looks like sent the Slack message) (defaults to hostname/ip)
+VerboseMessage: yes|no (should the slack message include all errors found?)
 ```
 
 Commands:
