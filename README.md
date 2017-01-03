@@ -41,7 +41,8 @@ ShowTime:       yes|no
 ShowUptime:     yes|no
 GracePeriod:    x (in seconds) (if an error found within grace period of system boot, returns 200 anyways)
                 Can be useful for systems that take some time after boot to become ready.
-AlertWindow:    x (in seconds) (if an error found within alert window of the last error, no notify sent)
+AlertWindow:    x (in seconds) (if an error found within alert window of the last error, no notify sent. Note
+                that the http request will still send 500, there's just no Slack notification.)
 
 [healthchecks]
 command:arg,arg,arg
