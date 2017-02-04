@@ -2,7 +2,7 @@
 #
 # servercanary.py
 #
-# @auathor T.S. Davenport (todd.davenport@yahoo.com)
+# @author T.S. Davenport (todd.davenport@yahoo.com)
 # @author Ferritt1975 (https://github.com/Ferritt1975)
 #
 #
